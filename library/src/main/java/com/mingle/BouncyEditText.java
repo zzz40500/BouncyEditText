@@ -32,6 +32,7 @@ public class BouncyEditText extends EditText {
     private int hintColor=getResources().getColor(R.color.hint_color);
 
     private boolean isSetPadding=false;
+    private boolean ishasHint= false;
 
     public BouncyEditText(Context context) {
         super(context);
@@ -51,10 +52,16 @@ public class BouncyEditText extends EditText {
 
     private void init() {
          paint=new Paint();
-        hintText=getHint().toString();
-         setHint("");
-         animOutInterpolator =new OvershootInterpolator(1.3f);
-         animInInterpolator =new DecelerateInterpolator();
+
+        animOutInterpolator = new OvershootInterpolator(1.3f);
+        animInInterpolator = new DecelerateInterpolator();
+
+        if(getHint()!=null) {
+            ishasHint=true;
+            hintText = getHint().toString();
+            setHint("");
+
+        }
 
     }
 
@@ -73,6 +80,11 @@ public class BouncyEditText extends EditText {
     protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
 
+
+       if(!ishasHint){
+           return;
+       }
+
         if(TextUtils.isEmpty(preString)!=TextUtils.isEmpty( getText().toString())) {
 
 
@@ -85,14 +97,27 @@ public class BouncyEditText extends EditText {
 
             preString = (String) getText().toString();
             startTime = System.currentTimeMillis();
-        }else{
-//            status = Status.ANIMATION_NONE;
         }
+    }
+
+
+
+    public void setHintText(String hintText) {
+        this.hintText = hintText;
+
+        ishasHint=true;
+        this.hintText = hintText;
+        setHint("");
+
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        if(!ishasHint){
+            return;
+        }
 
         float maxHintY = getBaseline();
         switch (status){
