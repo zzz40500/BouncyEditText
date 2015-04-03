@@ -15,6 +15,7 @@
    <com.mingle.BouncyEditText
        android:layout_width="fill_parent"
        android:hint="账号"
+       android:text="255"
        android:layout_height="wrap_content">
        </com.mingle.BouncyEditText>
 

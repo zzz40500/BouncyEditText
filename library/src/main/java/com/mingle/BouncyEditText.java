@@ -22,25 +22,27 @@ public class BouncyEditText extends EditText {
 
 
 
+
+    private int hintColor=getResources().getColor(R.color.hint_color);
     private Paint paint;
     private Status status= Status.ANIMATION_NONE;
     private String hintText;
     private Interpolator animOutInterpolator;
     private Interpolator animInInterpolator;
+
     private float animInDuration=200.0f;
     private float animOutDuration=260.0f;
-    private int hintColor=getResources().getColor(R.color.hint_color);
 
     private boolean isSetPadding=false;
-    private boolean ishasHint= false;
+    private boolean isHasHint = false;
 
     public BouncyEditText(Context context) {
         super(context);
-        init();
     }
 
     public BouncyEditText(Context context, AttributeSet attrs) {
-        super(context, attrs);    init();
+        super(context, attrs);
+        init();
     }
 
     public BouncyEditText(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -51,17 +53,22 @@ public class BouncyEditText extends EditText {
     }
 
     private void init() {
-         paint=new Paint();
+        paint=new Paint();
 
         animOutInterpolator = new OvershootInterpolator(1.3f);
         animInInterpolator = new DecelerateInterpolator();
 
         if(getHint()!=null) {
-            ishasHint=true;
+            isHasHint =true;
             hintText = getHint().toString();
             setHint("");
-
         }
+//        if (!TextUtils.isEmpty(getText().toString())) {
+//            status = Status.ANIMATION_OUT;
+//
+//        } else {
+//            status = Status.ANIMATION_IN;
+//        }
 
     }
 
@@ -81,11 +88,11 @@ public class BouncyEditText extends EditText {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
 
 
-       if(!ishasHint){
-           return;
-       }
+        if(!isHasHint){
+            return;
+        }
 
-        if(TextUtils.isEmpty(preString)!=TextUtils.isEmpty( getText().toString())) {
+        if(TextUtils.isEmpty(preString) != TextUtils.isEmpty( getText().toString())) {
 
 
             if (!TextUtils.isEmpty(getText().toString())) {
@@ -101,11 +108,23 @@ public class BouncyEditText extends EditText {
     }
 
 
+    @Override
+    public void setText(CharSequence text, BufferType type) {
+        super.setText(text, type);
+
+
+        if(TextUtils.isEmpty(text)){
+            text="";
+        }
+        preString= (String) text;
+
+    }
+
 
     public void setHintText(String hintText) {
         this.hintText = hintText;
 
-        ishasHint=true;
+        isHasHint =true;
         this.hintText = hintText;
         setHint("");
 
@@ -115,58 +134,60 @@ public class BouncyEditText extends EditText {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if(!ishasHint){
+        if(!isHasHint){
             return;
+        }
+        paint.set(getPaint());
+        paint.setAntiAlias(true);
+        paint.setColor(hintColor) ;
+
+        if(!isSetPadding) {
+            setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight() + (int) paint.measureText(hintText), getPaddingBottom());
+            isSetPadding=true;
         }
 
         float maxHintY = getBaseline();
         switch (status){
             case  ANIMATION_IN:
-                if(System.currentTimeMillis()-startTime<animInDuration){
+
+
+
+                if(System.currentTimeMillis()-startTime<animInDuration
+                        ){
                     float hintX=getCompoundPaddingLeft() + getScrollX()+(getWidth()-getCompoundPaddingRight()-getCompoundPaddingLeft())*(1- animInInterpolator.getInterpolation((System.currentTimeMillis()-startTime)/animInDuration));
-                    paint.set(getPaint());
-                    paint.setAntiAlias(true);
-                    paint.setColor(hintColor) ;
+
                     canvas.drawText(hintText,hintX,maxHintY,paint);
                     postInvalidate();
                 }else{
-                    float hintX = getCompoundPaddingLeft() + getScrollX();
+                    float hintX = getCompoundPaddingLeft();
                     canvas.drawText(hintText, hintX, maxHintY, paint);
                 }
 
-            break;
+                break;
             case  ANIMATION_OUT:
-                if(System.currentTimeMillis()-startTime<animOutDuration){
+
+
+                if(System.currentTimeMillis()-startTime<animOutDuration
+                        ){
                     float hintX=getCompoundPaddingLeft() + getScrollX()+(getWidth()-getCompoundPaddingRight()-getCompoundPaddingLeft())* animOutInterpolator.getInterpolation((System.currentTimeMillis()-startTime)/animOutDuration);
-                    paint.set(getPaint());
-                    paint.setAntiAlias(true);
-                    paint.setColor(hintColor) ;
                     canvas.drawText(hintText,hintX,maxHintY,paint);
                     postInvalidate();
                 }else{
-                    float hintX=getCompoundPaddingLeft() + getScrollX()+(getWidth()-getCompoundPaddingRight()-getCompoundPaddingLeft());
+                    float hintX=
+                            getScrollX()+(getWidth()-getCompoundPaddingRight());
                     canvas.drawText(hintText, hintX, maxHintY, paint);
                 }
 
                 break;
             case  ANIMATION_NONE:
-                paint.set(getPaint());
-                paint.setAntiAlias(true);
-                paint.setColor(hintColor) ;
-
-                if(!isSetPadding) {
-                    setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight() + (int) paint.measureText(hintText), getPaddingBottom());
-
-                    isSetPadding=true;
-                }
 
                 if(getText().toString().length()==0){
                     float hintX = getCompoundPaddingLeft() + getScrollX();
-
                     canvas.drawText(hintText,hintX,maxHintY,paint);
-                }else{
 
-                    float hintX=getCompoundPaddingLeft() + getScrollX()+(getWidth()-getCompoundPaddingRight()-getCompoundPaddingLeft());
+                }else{
+                    float hintX=
+                            getScrollX()+(getWidth()-getCompoundPaddingRight());
                     canvas.drawText(hintText,hintX,maxHintY,paint);
                 }
 
@@ -176,10 +197,11 @@ public class BouncyEditText extends EditText {
     }
 
 
+
     public enum  Status{
         ANIMATION_IN,
         ANIMATION_NONE,
-        ANIMATION_OUT;
+        ANIMATION_OUT
 
     }
 }
